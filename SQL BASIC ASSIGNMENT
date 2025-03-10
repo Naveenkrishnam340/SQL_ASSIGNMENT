@@ -1,0 +1,188 @@
+1.	CREATE A TABLE CALLED EMP WITH BELOW PROPERTIES?
+CREATE TABLE EMP (
+    emp_id         NUMBER PRIMARY KEY,
+    first_name     VARCHAR(255) NOT NULL,
+   last_name      VARCHAR(255),
+    email          VARCHAR(255) NOT NULL,
+    phone_number   VARCHAR(20) NOT NULL,
+    dept_id        NUMBER,
+    address_id     NUMBER,
+    blood_group    VARCHAR(10),
+    dob            DATE,
+    doj            DATE,
+    dot            DATE,
+    created_ts     TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    reference      VARCHAR(255),
+    role           VARCHAR(100),
+    salary         FLOAT,
+    band           NUMBER,
+    reports_to     NUMBER,
+    CONSTRAINT fk_emp_dept FOREIGN KEY (dept_id) REFERENCES DEPARTMENT(department_id),
+    CONSTRAINT fk_emp_address FOREIGN KEY (address_id) REFERENCES ADDRESS(add_id)
+);
+
+2.	CREATE A TABLE CALLED ADDRESS With below properties .
+CREATE TABLE ADDRESS (
+    add_id           NUMBER PRIMARY KEY,
+    country          VARCHAR(100),
+    state            VARCHAR(100),
+    city             VARCHAR(100),
+    street           VARCHAR(255),
+    zipcode          NUMBER,
+    pre_known_add    JSON,
+    created_ts       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_updated_ts  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+3.	CREATE A TABLE CALLED DEPARTMENT With below properties.
+CREATE TABLE DEPARTMENT (
+    department_id    NUMBER PRIMARY KEY,
+    department_name  VARCHAR(255),
+    department_code  CHAR(4) NOT NULL,
+    address_id       NUMBER,
+    dept_head_id     NUMBER NOT NULL,
+CONSTRAINT fk_department_address FOREIGN KEY (address_id) REFERENCES ADDRESS(add_id)
+);
+4.	Insert valid data into ADDRESS Table all the columns should be populated?
+INSERT INTO ADDRESS (add_id, country, state, city, street, zipcode, pre_known_add, created_ts, last_updated_ts)  
+VALUES  
+(1, 'USA', 'California', 'San Francisco', '123 Market St', 94105,  
+ '{"landmark": "Near Union Square", "apartment": "Suite 500"}',  
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),  
+
+(2, 'USA', 'New York', 'New York City', '456 Madison Ave', 10022,  
+ '{"landmark": "Opposite Central Park", "apartment": "Floor 12"}',  
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),  
+
+(3, 'Canada', 'Ontario', 'Toronto', '789 Bay St', M5G2C8,  
+ '{"landmark": "Near Eaton Centre", "building": "Tower A"}',  
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),  
+
+(4, 'UK', 'England', 'London', '10 Downing St', SW1A2AA,  
+ '{"landmark": "Near Westminster", "house": "No. 10"}',  
+ CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+5.	Insert data into DEPARTMENT Table all the columns should be populated?
+INSERT INTO DEPARTMENT (department_id, department_name, department_code, address_id, dept_head_id)  
+VALUES  
+(1, 'Engineering', 'ENG1', 1, 101),  
+(2, 'Finance', 'FIN2', 2, 102),  
+(3, 'Human Resources', 'HR03', 3, 103),  
+(4, 'Marketing', 'MKT4', 4, 104);
+6.	Insert data into EMP Table all the columns should be populated ?
+INSERT INTO EMP (emp_id, first_name, last_name, email, phone_number, dept_id, address_id, blood_group, dob, doj, dot, created_ts, reference, role, salary, band, reports_to)  
+VALUES  
+(1001, 'John', 'Doe', 'john.doe@email.com', '123-456-7890', 1, 1, 'O+', '1990-05-15', '2020-06-10', NULL, CURRENT_TIMESTAMP, 'Referral', 'Software Engineer', 85000, 3, 101),  
+(1002, 'Jane', 'Smith', 'jane.smith@email.com', '987-654-3210', 2, 2, 'A-', '1988-07-22', '2019-08-15', NULL, CURRENT_TIMESTAMP, 'LinkedIn', 'Financial Analyst', 78000, 3, 102),  
+(1003, 'Robert', 'Brown', 'robert.brown@email.com', '456-789-0123', 3, 3, 'B+', '1992-02-10', '2021-01-05', NULL, CURRENT_TIMESTAMP, 'Company Transfer', 'HR Manager', 92000, 4, 103),  
+(1004, 'Emily', 'Davis', 'emily.davis@email.com', '321-654-0987', 4, 4, 'AB-', '1995-10-30', '2022-03-20', NULL, CURRENT_TIMESTAMP, 'Campus Hire', 'Marketing Specialist', 72000, 2, 104);
+7.	Update data in EMP , ADDRESS & DEPARTMENT update example for each table ?
+Update ADDRESS Table (Updating city)
+sql
+Copy
+Edit
+UPDATE ADDRESS  
+SET city = 'Los Angeles'  
+WHERE add_id = 1;  
+Updates the city from San Francisco to Los Angeles for add_id = 1.
+Update DEPARTMENT Table (Updating department_name)
+sql
+Copy
+Edit
+UPDATE DEPARTMENT  
+SET department_name = 'Operations'  
+WHERE department_id = 3;  
+Changes 'Human Resources' to 'Operations' for department_id = 3.
+Update EMP Table (Updating salary)
+sql
+Copy
+Edit
+UPDATE EMP  
+SET salary = salary + 5000  
+WHERE emp_id = 1002;  
+Increases the salary of employee 1002 by $5000.
+8.	DELETE DATA EMP , ADDRESS & DEPARTMENT delete example for each table?
+Delete a specific employee from EMP table
+sql
+Copy
+Edit
+DELETE FROM EMP  
+WHERE emp_id = 1001;  
+ Deletes the employee with emp_id = 1001.
+Delete a specific address from ADDRESS table
+sql
+Copy
+Edit
+DELETE FROM ADDRESS  
+WHERE add_id = 2;  
+Deletes the address with add_id = 2.
+
+Delete a specific department from DEPARTMENT table
+sql
+Copy
+Edit
+DELETE FROM DEPARTMENT  
+WHERE department_id = 3;  
+Deletes the department with department_id = 3.
+9.	DROP Column reports to from EMP Table?
+ALTER TABLE EMP  
+DROP COLUMN reports_to;
+10.	DROP column dept_head_id from DEPARTMENT Table?
+ALTER TABLE DEPARTMENT  
+DROP COLUMN dept_head_id;
+11.	Change EMP.band column to STRING Type?
+ALTER TABLE EMP
+MODIFY COLUMN band STRING;
+12.	Find out EMP Age by using EMP.dob column?
+SELECT 
+    EMP_ID,
+    dob,
+    TIMESTAMPDIFF(YEAR, dob, CURRENT_DATE) AS age
+FROM 
+    EMP;
+13.	Print todays date?
+SELECT CURRENT_DATE AS today_date;
+14.	Find out EMP experience with this company by using  EMP.doj column?
+SELECT 
+    EMP_ID,
+    doj,
+    TIMESTAMPDIFF(YEAR, doj, CURRENT_DATE) AS experience_years,
+    TIMESTAMPDIFF(MONTH, doj, CURRENT_DATE) % 12 AS experience_months
+FROM 
+    EMP;
+15.	Add column EMP.comment_col to EMP table?
+ALTER TABLE EMP
+ADD COLUMN comment_col VARCHAR(255);
+16.	Add column DEPARTMENT.comment_col to DEPARTMENT table?
+ALTER TABLE DEPARTMENT
+ADD COLUMN comment_col VARCHAR(255);
+17.	Add column ADDRESS.comment_col to ADDRESS table?
+ALTER TABLE ADDRESS
+ADD COLUMN comment_col VARCHAR(255);
+18.	Truncate all the tables?
+TRUNCATE TABLE EMP;
+TRUNCATE TABLE DEPARTMENT;
+TRUNCATE TABLE ADDRESS;
+19.	Create a view on top of EMP , DEPARTMENT & ADDRESS Tables?
+CREATE VIEW EMP_DEPT_ADDRESS_VIEW AS
+SELECT 
+    EMP.emp_id,
+ CASE 
+        WHEN EMP.last_name IS NOT NULL THEN CONCAT(EMP.first_name, ' ', EMP.last_name)
+        ELSE EMP.first_name
+    END AS name,
+    CONCAT(ADDRESS.street, ', ', ADDRESS.city, ', ', ADDRESS.state, ', ', ADDRESS.country, ', ', ADDRESS.zipcode) AS address,
+    DEPARTMENT.department_name AS dept_name,
+    EMP.salary
+FROM 
+    EMP
+JOIN 
+    DEPARTMENT ON EMP.department_id = DEPARTMENT.department_id
+JOIN 
+    ADDRESS ON EMP.emp_id = ADDRESS.emp_id;
+20.	DROP All tables?
+DROP TABLE IF EXISTS EMP;
+DROP TABLE IF EXISTS DEPARTMENT;
+DROP TABLE IF EXISTS ADDRESS;
+
+
+
+
