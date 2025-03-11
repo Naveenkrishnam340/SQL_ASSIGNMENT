@@ -1,0 +1,109 @@
+1--I need total Population in zipcode 94085 (Sunnyvale CA)
+SELECT 
+   zip_code, 
+    population, 
+    SUM(population) OVER () AS total_population
+FROM `bigquery-public-data.census_bureau_usa.population_by_zip_2010`
+WHERE zip_code = '94085';
+
+2--I need number of Male and Female head count in zipcode 94085 (Sunnyvale CA)
+SELECT 
+    zip_code, 
+    gender,
+    population,
+    SUM(CASE WHEN gender = 'Male' THEN population ELSE 0 END) 
+        OVER () AS male_population,
+    SUM(CASE WHEN gender = 'Female' THEN population ELSE 0 END) 
+        OVER () AS female_population
+FROM `bigquery-public-data.census_bureau_usa.population_by_zip_2010`
+WHERE zip_code = '94085';
+
+3--I want which Age group has max headcount for both male and female genders combine (zipcode 94085 (Sunnyvale CA))
+SELECT 
+    zip_code,
+    CONCAT(CAST(minimum_age AS STRING), '-', CAST(maximum_age AS STRING)) AS age_group,
+    population,
+    SUM(population) OVER (PARTITION BY CONCAT(CAST(minimum_age AS STRING), '-', CAST(maximum_age AS STRING))) 
+        AS total_population
+FROM `bigquery-public-data.census_bureau_usa.population_by_zip_2010`
+WHERE zip_code = '94085'
+ORDER BY total_population DESC;
+
+4--I want age group for male gender which has max male population zipcode 94085 (Sunnyvale CA))
+WITH MalePopulation AS (
+    SELECT 
+        zip_code,
+        CONCAT(CAST(minimum_age AS STRING), '-', CAST(maximum_age AS STRING)) AS age_group,
+        population,
+        SUM(population) OVER (PARTITION BY CONCAT(CAST(minimum_age AS STRING), '-', CAST(maximum_age AS STRING))) AS total_male_population
+    FROM `bigquery-public-data.census_bureau_usa.population_by_zip_2010`
+    WHERE 
+        zip_code = '94085' 
+        AND LOWER(gender) = 'male'  -- Case-insensitive gender filtering
+        AND minimum_age IS NOT NULL 
+        AND maximum_age IS NOT NULL
+)
+SELECT 
+    zip_code,
+    age_group,
+    total_male_population
+FROM MalePopulation
+QUALIFY RANK() OVER (ORDER BY total_male_population DESC) = 1;
+
+5--I want age group for female gender which has max male population zipcode 94085 (Sunnyvale CA))
+WITH FemalePopulation AS (
+    SELECT 
+        zip_code,
+        CONCAT(CAST(minimum_age AS STRING), '-', CAST(maximum_age AS STRING)) AS age_group,
+        population,
+        SUM(population) OVER (PARTITION BY CONCAT(CAST(minimum_age AS STRING), '-', CAST(maximum_age AS STRING))) AS total_female_population
+    FROM `bigquery-public-data.census_bureau_usa.population_by_zip_2010`
+    WHERE 
+        zip_code = '94085' 
+        AND LOWER(gender) = 'female'  -- Case-insensitive gender filtering
+        AND minimum_age IS NOT NULL 
+        AND maximum_age IS NOT NULL
+)
+SELECT 
+    zip_code,
+    age_group,
+    total_female_population
+FROM FemalePopulation
+QUALIFY RANK() OVER (ORDER BY total_female_population DESC) = 1;
+6--I want zipcode which has highest male and female population in USA
+SELECT 
+    zipcode,
+    SUM(CASE WHEN LOWER(gender) = 'male' THEN population ELSE 0 END) 
+        OVER (PARTITION BY zipcode) AS male_population,
+    SUM(CASE WHEN LOWER(gender) = 'female' THEN population ELSE 0 END) 
+        OVER (PARTITION BY zipcode) AS female_population,
+    SUM(population) OVER (PARTITION BY zipcode) AS total_population
+FROM `bigquery-public-data.census_bureau_usa.population_by_zip_2010`
+QUALIFY RANK() OVER (ORDER BY SUM(population) OVER (PARTITION BY zipcode) DESC) > 0;
+
+7--I want first five age groups which has highest male and female population in USA
+SELECT 
+    CONCAT(CAST(minimum_age AS STRING), '-', CAST(maximum_age AS STRING)) AS age_group,
+    SUM(CASE WHEN LOWER(gender) = 'male' THEN population ELSE 0 END) 
+        OVER (PARTITION BY CONCAT(CAST(minimum_age AS STRING), '-', CAST(maximum_age AS STRING))) AS male_population,
+    SUM(CASE WHEN LOWER(gender) = 'female' THEN population ELSE 0 END) 
+        OVER (PARTITION BY CONCAT(CAST(minimum_age AS STRING), '-', CAST(maximum_age AS STRING))) AS female_population
+FROM `bigquery-public-data.census_bureau_usa.population_by_zip_2010`
+QUALIFY RANK() OVER (ORDER BY male_population DESC) <= 5
+   OR RANK() OVER (ORDER BY female_population DESC) <= 5;
+
+8--I want first five zipcodes which has highest female population in entire USA
+SELECT 
+    zipcode,
+    SUM(CASE WHEN LOWER(gender) = 'female' THEN population ELSE 0 END) 
+        OVER (PARTITION BY zipcode) AS female_population
+FROM `bigquery-public-data.census_bureau_usa.population_by_zip_2010`
+QUALIFY RANK() OVER (ORDER BY female_population DESC) <= 5;
+
+9--I want first 10 which has lowest male population in entire USA
+SELECT 
+    zipcode,
+    SUM(CASE WHEN LOWER(gender) = 'male' THEN population ELSE 0 END) 
+        OVER (PARTITION BY zipcode) AS male_population
+FROM `bigquery-public-data.census_bureau_usa.population_by_zip_2010`
+QUALIFY RANK() OVER (ORDER BY male_population ASC) <= 10;
